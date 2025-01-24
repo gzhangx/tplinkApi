@@ -22,8 +22,8 @@ function getAes() {
         iv,
         encrypt: text => {
             console.log('key', key, 'iv', iv, 'keybuf', keyBuf.toString('hex'), ivBuf.toString('hex'));
-            const cipher = crypto.createCipheriv('aes-128-cbc', keyBuf, ivBuf);            
-            let encrypted = cipher.update(text, undefined, 'hex');            
+            const cipher = crypto.createCipheriv('aes-128-cbc', keyBuf, ivBuf);
+            let encrypted = cipher.update(text, undefined, 'hex');
             encrypted += cipher.final('hex');
             return Buffer.from(encrypted, 'hex').toString('base64');
         },
@@ -67,7 +67,7 @@ function getRSAEncryptor(modulusExpAry) {
     const MAX = modu.length - 11;
     return data => {
         let res = '';
-        while (data.length) { 
+        while (data.length) {
             res += crypto.publicEncrypt({
                 key: publicKey,
                 padding: crypto.constants.RSA_PKCS1_PADDING
@@ -80,20 +80,20 @@ function getRSAEncryptor(modulusExpAry) {
 
 //https://gist.github.com/rosmo/29200c1aedb991ce55942c4ae8b54edd
 async function getToken(host, password) {
-    const headers =  {
+    const headers = {
         'content-Type': 'application/x-www-form-urlencoded'
     };
     let data = {
         operation: 'read',
-    };    
-    const loginUrl =  form => `http://${host}/cgi-bin/luci/;stok=/login?form=${form}`
+    };
+    const loginUrl = form => `http://${host}/cgi-bin/luci/;stok=/login?form=${form}`
     const pwdKeyRes = await util.doHttpRequest({
         method: 'POST',
         url: loginUrl('keys'),
         data,
         headers,
     });
-    const password_rsa_public_key = pwdKeyRes.data.data.password;    
+    const password_rsa_public_key = pwdKeyRes.data.data.password;
     console.log('pwdKeyRes.data', pwdKeyRes.data)
     if (!password_rsa_public_key) throw new Error('Cant fetch RSA keys for password ' + JSON.stringify(pwdKeyRes.data));
 
@@ -104,7 +104,7 @@ async function getToken(host, password) {
         data,
         headers,
     });
-    console.log('------------------------ auth rsa n ',res2.data)
+    console.log('------------------------ auth rsa n ', res2.data)
     let rsaSeq = res2.data.data.seq;
     
 
@@ -132,7 +132,7 @@ async function getToken(host, password) {
     
     
     const login_payload = {
-            "params": { "password": passwordHex },
+        "params": { "password": passwordHex },
         "operation": "login",
     }
 
@@ -150,17 +150,12 @@ async function getToken(host, password) {
             sign,
         },
         headers,
-    });    
+    });
 
     console.log('authRes', authres.statusMessage, authres.data.toString(), 'data len', sdata.length, 'sign len', sign.length);
 
 
     console.log('try decrypt', aesEnc.decrypt('uHTss4NSQXBoPbgBcQ+B41STNCjfQrmweT7RkOzQWB9lDTkf5L6A9T5oN/3keXfAci52oVLpKushl6Ucn1ygXA=='))
-}
-
-function bufToLong(buf) {
-    let hexString = buf.toString('hex');
-    return BigInt('0x' + hexString).toString();
 }
 
 
