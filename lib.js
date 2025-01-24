@@ -93,9 +93,11 @@ async function getToken(host, password) {
         data,
         headers,
     });
-    const password_rsa_public_key = pwdKeyRes.data.data.password;
-    console.log('pwdKeyRes.data', pwdKeyRes.data)
-    if (!password_rsa_public_key) throw new Error('Cant fetch RSA keys for password ' + JSON.stringify(pwdKeyRes.data));
+    const passwordRsaKey = pwdKeyRes.data;
+    const password_rsa_public_key = passwordRsaKey.data.password;
+    console.log('pwdKeyRes.data', pwdKeyRes.data);
+    if (!password_rsa_public_key)
+        throw new Error('Cant fetch RSA keys for password ' + JSON.stringify(pwdKeyRes.data));
 
 
     const res2 = await util.doHttpRequest({
@@ -104,11 +106,11 @@ async function getToken(host, password) {
         data,
         headers,
     });
-    console.log('------------------------ auth rsa n ', res2.data)
-    let rsaSeq = res2.data.data.seq;
-    
 
-    console.log('encrypting pwd', password)
+    const encryptRsa = res2.data;
+    console.log('------------------------ auth rsa n ', encryptRsa);
+    let rsaSeq = encryptRsa.data.seq;
+    console.log('encrypting pwd', password);
     let passwordHex = getRSAEncryptor(password_rsa_public_key)(password);
     //console.log('forcing password hex to be C762FB52B9A847325F5EA24B1EE193DBB69BC20E97A00900E0683C4AA67E5278FBE9797FD54448711B8C3BE0428F0D93506B55D574E98B015D3431E4B06D1F9D')
     //passwordHex = 'C762FB52B9A847325F5EA24B1EE193DBB69BC20E97A00900E0683C4AA67E5278FBE9797FD54448711B8C3BE0428F0D93506B55D574E98B015D3431E4B06D1F9D'
@@ -127,7 +129,7 @@ async function getToken(host, password) {
     console.log('password hash=', passwordHash)
     // for "sign" parameter
     
-    const encr = getRSAEncryptor(res2.data.data.key);
+    const encr = getRSAEncryptor(encryptRsa.data.key);
     //console.log('create encr for ', res2.data.data.key, res2.data.data.key[0].length)
     
     
