@@ -1,5 +1,5 @@
-const { util } = require('@gzhangx/googleapi');
-const crypto = require('crypto');
+import { util } from '@gzhangx/googleapi';
+import crypto from 'crypto';
 
 //https://github.com/marcomow/home-assistant-tp-link-router-addon/blob/7af13b3351047bfc2e29729488bc449f3eaef3c7/src/index.ts
 
@@ -22,8 +22,8 @@ function getAes() {
         iv,
         encrypt: text => {
             console.log('key', key, 'iv', iv, 'keybuf', keyBuf.toString('hex'), ivBuf.toString('hex'));
-            const cipher = crypto.createCipheriv('aes-128-cbc', keyBuf, ivBuf);            
-            let encrypted = cipher.update(text, undefined, 'hex');            
+            const cipher = crypto.createCipheriv('aes-128-cbc', keyBuf, ivBuf);
+            let encrypted = cipher.update(text, undefined, 'hex');
             encrypted += cipher.final('hex');
             return Buffer.from(encrypted, 'hex').toString('base64');
         },
@@ -36,16 +36,14 @@ function getAes() {
     }
 }
 
-
-function padPKCS7(dataStr, blockSize = 128 / 8) {
+function padPKCS7(dataStr: string, blockSize = 128 / 8) {
     const data = Buffer.from(dataStr);
     const padding = blockSize - (data.length % blockSize);
     const paddingBuffer = Buffer.alloc(padding, padding);
     return Buffer.concat([data, paddingBuffer]);
 }
 
-
-function getRSAEncryptor(modulusExpAry) {
+function getRSAEncryptor(modulusExpAry: string[]) {
     const modu = Buffer.from(modulusExpAry[0], 'hex');
     const modulusBuffer = modu.toString('base64');
     const exponentBuffer = Buffer.from(modulusExpAry[1], 'hex').toString('base64');
@@ -53,7 +51,7 @@ function getRSAEncryptor(modulusExpAry) {
 
 
     // Create the public key object
-    const keyObject = {
+    const keyObject: crypto.JsonWebKeyInput = {
         key: {
             kty: 'RSA',
             n: modulusBuffer,
@@ -71,7 +69,7 @@ function getRSAEncryptor(modulusExpAry) {
             res += crypto.publicEncrypt({
                 key: publicKey,
                 padding: crypto.constants.RSA_PKCS1_PADDING
-            }, data.substring(0, MAX)).toString('HEX');
+            }, data.substring(0, MAX)).toString('hex');
             data = data.substring(MAX);
         }
         return res;
@@ -93,7 +91,14 @@ async function getToken(host, password) {
         data,
         headers,
     });
-    const password_rsa_public_key = pwdKeyRes.data.data.password;    
+    const passwordRsaKey: {
+        data: {
+            password: string[];
+            mode: 'router';
+            username: '';
+        }
+    } = pwdKeyRes.data as any;
+    const password_rsa_public_key = passwordRsaKey.data.password;
     console.log('pwdKeyRes.data', pwdKeyRes.data)
     if (!password_rsa_public_key) throw new Error('Cant fetch RSA keys for password ' + JSON.stringify(pwdKeyRes.data));
 
@@ -104,8 +109,14 @@ async function getToken(host, password) {
         data,
         headers,
     });
+    const encryptRsa = res2.data as unknown as {
+        data: {
+            seq: number;
+            key: string[];
+        }
+    }
     console.log('------------------------ auth rsa n ',res2.data)
-    let rsaSeq = res2.data.data.seq;
+    let rsaSeq: number = encryptRsa.data.seq;
     
 
     console.log('encrypting pwd', password)
@@ -127,8 +138,8 @@ async function getToken(host, password) {
     console.log('password hash=', passwordHash)
     // for "sign" parameter
     
-    const encr = getRSAEncryptor(res2.data.data.key);
-    //console.log('create encr for ', res2.data.data.key, res2.data.data.key[0].length)
+    const encr = getRSAEncryptor(encryptRsa.data.key);
+    //console.log('create encr for ', encryptRsa.data.key, encryptRsa.data.key[0].length)
     
     
     const login_payload = {
@@ -152,20 +163,13 @@ async function getToken(host, password) {
         headers,
     });    
 
+    console.log('authRes', authres.statusMessage, 'login response data=====>', authres.data.toString(), 'data len', sdata.length, 'sign len', sign.length);
     console.log('authRes', authres.statusMessage, authres.data.toString(), 'data len', sdata.length, 'sign len', sign.length);
+    //console.log(sign)
 
 
-    console.log('try decrypt', aesEnc.decrypt('uHTss4NSQXBoPbgBcQ+B41STNCjfQrmweT7RkOzQWB9lDTkf5L6A9T5oN/3keXfAci52oVLpKushl6Ucn1ygXA=='))
 }
-
-function bufToLong(buf) {
-    let hexString = buf.toString('hex');
-    return BigInt('0x' + hexString).toString();
-}
-
-
 
 
 getToken('192.168.0.1', 'test')
-
-//console.log('pwd=', process.argv[2])
+console.log('pwd=', process.argv[2])

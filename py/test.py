@@ -96,9 +96,17 @@ def aes_encrypt(key: bytes, iv: bytes, plaintext: bytes) -> bytes:
     :param plaintext: Data to encrypt
     :return: Ciphertext
     """
+    print("algorithms.AES.block_size-----------------------------------", algorithms.AES.block_size)
     padder = padding.PKCS7(algorithms.AES.block_size).padder()
+    print("algorithms.AES.block_size befor pad-----------------------------------", plaintext.decode(), plaintext.hex(),'------------------------')
     plaintext_bytes: bytes = padder.update(plaintext) + padder.finalize()
+    print("algorithms.AES.block_size after pad-----------------------------------", plaintext_bytes.hex(),'------------------------')
     cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+    encryptorDBGRM = cipher.encryptor()
+    dbgrm =encryptorDBGRM.update(plaintext_bytes)
+    print("!! AFTER update 1-----------------------------------", dbgrm.hex(),'------------------------')
+    print("!! AFTER update 2-----------------------------------", encryptorDBGRM.finalize().hex(),'------------------------')
+
     encryptor = cipher.encryptor()
     ciphertext = encryptor.update(plaintext_bytes) + encryptor.finalize()
     return ciphertext
@@ -281,6 +289,10 @@ class TplinkDecoApi:
 
         try:            
             keys = response_json["data"]["password"]
+            print("passssssssssssssssssssssssssssssssss key ", keys)
+            print("forcing key to D1E79FF135D14E342D76185C23024E6DEAD4D6EC2C317A526C811E83538EA4E5ED8E1B0EEE5CE26E3C1B6A5F1FE11FA804F28B7E8821CA90AFA5B2F300DF99FDA27C9D2131E031EA11463C47944C05005EF4C1CE932D7F4A87C7563581D9F27F0C305023FCE94997EC7D790696E784357ED803A610EBB71B12A8BE5936429BFD")
+            keys[0]  = 'D1E79FF135D14E342D76185C23024E6DEAD4D6EC2C317A526C811E83538EA4E5ED8E1B0EEE5CE26E3C1B6A5F1FE11FA804F28B7E8821CA90AFA5B2F300DF99FDA27C9D2131E031EA11463C47944C05005EF4C1CE932D7F4A87C7563581D9F27F0C305023FCE94997EC7D790696E784357ED803A610EBB71B12A8BE5936429BFD'
+            keys[1] = '010001'
             self._password_rsa_n = int(keys[0], 16)
 
             #print("forcing self._password_rsa_n to be C762FB52B9A847325F5EA24B1EE193DBB69BC20E97A00900E0683C4AA67E5278FBE9797FD54448711B8C3BE0428F0D93506B55D574E98B015D3431E4B06D1F9D")
@@ -359,6 +371,17 @@ class TplinkDecoApi:
         if self._seq is None:
             await self._async_fetch_auth()
 
+        test = aes_encrypt(
+            self._aes_key_bytes, self._aes_iv_bytes, 'test'.encode()
+        )
+        print('--------------------------------------> test  aes encoding 1 = ',base64.b64encode(test).decode(),'aeskeybyes',self._aes_key_bytes,'aes ivbyes', self._aes_iv_bytes)
+        testres = aes_decrypt(self._aes_key_bytes, self._aes_iv_bytes, test)
+        print('--------------------------------------> test  aes encoding 1 and decc = ',testres.decode())
+
+        test = aes_encrypt(self._aes_key_bytes, self._aes_iv_bytes
+                    ,'0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789a'.encode())
+        
+        print('--------------------------------------> test aes encoding 2 = ',base64.b64encode(test).decode())
         print("forcing self._seq to 903365446")
         #self._seq = 903365446
         password_encrypted = rsa_encrypt(
@@ -389,6 +412,7 @@ class TplinkDecoApi:
 
         #print("before decrypt datasdfaf response_json  response_json=====",response_json)
         #print("sent paylaod is ",self._encode_payload(login_payload))
+        print('decrypting data ----->',response_json["data"])
         data = self._decrypt_data(context, response_json["data"])
         print("after decrpt data=",data)
         error_code = data.get("error_code")
@@ -498,6 +522,7 @@ class TplinkDecoApi:
 
     def _encode_payload(self, payload: Any):
         data = self._encode_data(payload)
+        print('Encryting login_payload', payload, 'got', data);
         sign = self._encode_sign(len(data))
         print("data len", len(data), 'signlen', len(sign))
         print(sign)
@@ -592,7 +617,7 @@ class TplinkDecoApi:
                 )
 
 async def start(pwd):    
-    api = TplinkDecoApi(aiohttp.ClientSession(), password=pwd)
+    api = TplinkDecoApi(aiohttp.ClientSession(), password=pwd)    
     await api._async_login()
 
 async def main1(pwd):
