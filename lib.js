@@ -119,11 +119,7 @@ async function getToken(host, password) {
     const md5 = crypto.createHash('MD5');
     const passwordHash = md5.update('admin'+password).digest('hex');    
     
-    const encr = getRSAEncryptor(encryptRsa.data.key);
-    
-    const sdata = aesEnc.encrypt(`password=${passwordHex}&operation=login`);    
-    const encryptStr = `k=${aesEnc.key}&i=${aesEnc.iv}&h=${passwordHash}&s=${rsaSeq + sdata.length}`;    
-    const sign = encr(encryptStr);    
+    const encr = getRSAEncryptor(encryptRsa.data.key);    
 
     function createDataReq(data) {
         const sdata = aesEnc.encrypt(data);
