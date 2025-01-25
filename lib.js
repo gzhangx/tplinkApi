@@ -78,10 +78,13 @@ function getRSAEncryptor(modulusExpAry) {
 }
 
 //https://gist.github.com/rosmo/29200c1aedb991ce55942c4ae8b54edd
-async function getToken(host, password) {
-    const headers = {
-        'content-Type': 'application/x-www-form-urlencoded'
-    };
+const headers = Object.freeze({
+    'content-Type': 'application/x-www-form-urlencoded',
+    'Host': 'tplinkwifi.net',
+    origin: 'http://tplinkwifi.net',
+    Referer:'http://tplinkwifi.net/webpages/index.html?t=33f50594',
+});
+async function getToken(host, password) {    
     let data = {
         operation: 'read',
     };
@@ -90,7 +93,7 @@ async function getToken(host, password) {
         method: 'POST',
         url: loginUrl('keys'),
         data,
-        headers,
+        headers: { ...headers },
     });
     const passwordRsaKey = pwdKeyRes.data;
     console.log('password key', passwordRsaKey);
@@ -103,7 +106,7 @@ async function getToken(host, password) {
         method: 'POST',
         url: loginUrl('auth'),
         data,
-        headers,
+        headers: { ...headers },
     });    
 
     const encryptRsa = res2.data;    
@@ -121,25 +124,77 @@ async function getToken(host, password) {
     const sdata = aesEnc.encrypt(`password=${passwordHex}&operation=login`);    
     const encryptStr = `k=${aesEnc.key}&i=${aesEnc.iv}&h=${passwordHash}&s=${rsaSeq + sdata.length}`;    
     const sign = encr(encryptStr);    
-        
-    const authres = await util.doHttpRequest({
-        method: 'POST',
-        url: loginUrl('login'),
-        data: Buffer.from(`sign=${sign}&data=${encodeURIComponent(sdata)}`),
-        headers,
-    });
 
-    console.log('authRes', authres.statusMessage, Buffer.isBuffer(authres.data)?authres.data.toString():authres.data);
-
-    if (authres.data.toString() === '') {
-        console.log('BAD')
-    } else {
-        const decrypted = aesEnc.decrypt(authres.data.data);
-        console.log('decrypted', decrypted);
+    function createDataReq(data) {
+        const sdata = aesEnc.encrypt(data);
+        const encryptStr = `k=${aesEnc.key}&i=${aesEnc.iv}&h=${passwordHash}&s=${rsaSeq + sdata.length}`;
+        const sign = encr(encryptStr);    
+        return Buffer.from(`sign=${sign}&data=${encodeURIComponent(sdata)}`);
     }
+        
+    
+    const doDataRequestCaches = {
+        cookie: '',
+    }
+    async function doDataRequest(url, reqStr, showDebug) {
+        console.log('doDataRequest', url, reqStr)
+        const header = {
+            ...headers,
+        };
+        if (doDataRequestCaches.cookie) {
+            header.Cookie = doDataRequestCaches.cookie;
+        }
+        const res = await util.doHttpRequest({
+            method: 'POST',
+            url,
+            data: createDataReq(reqStr),
+            headers: { ...headers },
+        });        
+        console.log('doDataRequest', url, reqStr, res.statusMessage)
+        if (showDebug) {
+            console.log('header',header, 'res', res);
+        }
+        const setCookie = res.headers['set-cookie'];
+        if (setCookie) {
+            doDataRequestCaches.cookie = setCookie[0].split(';')[0];
+            console.log('set cookie', doDataRequestCaches.cookie);
+        }
+        if (!res.data.data) return res;
+        const decrypted = aesEnc.decrypt(res.data.data);
+        if (Buffer.isBuffer(decrypted)) return '';
+        return JSON.parse(decrypted);
+    }
+
+    const authres = await doDataRequest(loginUrl('login'), `password=${passwordHex}&operation=login`);        
+
+
+    console.log('authRes', authres);
+
+    if (authres === '') {
+        console.log('BAD')
+        return;
+    } 
+        
+    const stok = authres.data.stok;
+    console.log('stok', stok)
+    await getWanReq(stok, doDataRequest);
     //console.log('try decrypt', aesEnc.decrypt('uHTss4NSQXBoPbgBcQ+B41STNCjfQrmweT7RkOzQWB9lDTkf5L6A9T5oN/3keXfAci52oVLpKushl6Ucn1ygXA=='))
 }
 
+
+async function getAdminStatus(stok, doDataRequest,form) {
+    const url = `http://192.168.0.1/cgi-bin/luci/;stok=${stok}/admin/status?form=${form}`;
+    const res = await doDataRequest(url, 'operation=read', false);
+    if (res.statusMessage) console.log(res.statusMessage);
+    else {
+        console.log('getwan res', res);
+    }
+}
+async function getWanReq(stok, doDataRequest) {
+    await getAdminStatus(stok, doDataRequest, 'wan_speed');
+    await getAdminStatus(stok, doDataRequest, 'internet');
+    await getAdminStatus(stok, doDataRequest, 'all');
+}
 
 
 console.log('using ', process.argv[2])
