@@ -186,8 +186,8 @@ async function getAdminStatus(stok, doDataRequest,form) {
 async function getWanReq(stok, doDataRequest) {
     console.log('Stok', stok);
     while (true) {
-        const res = await getAdminStatus(stok, doDataRequest, 'wan_speed');
-        console.log(`down_speed ${res.down_speed.toString().padStart(7)} up_speed: ${res.up_speed.toString().padStart(7)}`)
+        const res = await getAdminStatus(stok, doDataRequest, 'wan_speed'); //test_time
+        console.log(`down_speed ${res.down_speed.toString().padStart(7)} up_speed: ${res.up_speed.toString().padStart(7)} testtime: ${res.test_time}`)
         await sleep(1000);
     }
     //await getAdminStatus(stok, doDataRequest, 'internet');

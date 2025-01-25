@@ -1,7 +1,9 @@
-import { util } from '@gzhangx/googleapi';
+import { util, gsAccount } from '@gzhangx/googleapi';
 import crypto from 'crypto';
 import http from 'http';
+import * as fs from 'fs'
 
+// borrowed ideas, but none worked
 //https://github.com/marcomow/home-assistant-tp-link-router-addon/blob/7af13b3351047bfc2e29729488bc449f3eaef3c7/src/index.ts
 
 function getAes() {
@@ -206,7 +208,7 @@ async function getWanReq(stok: string, doDataRequest: DoDataRequestType) {
     console.log('Stok', stok);
     while (true) {
         const res = await getAdminStatus(stok, doDataRequest, 'wan_speed');
-        console.log(`down_speed ${res.down_speed.toString().padStart(7)} up_speed: ${res.up_speed.toString().padStart(7)}`)
+        console.log(`down_speed ${res.down_speed.toString().padStart(7)} up_speed: ${res.up_speed.toString().padStart(7)} testtime: ${res.test_time}`)
         await sleep(1000);
     }
     //await getAdminStatus(stok, doDataRequest, 'internet');
@@ -218,5 +220,17 @@ async function sleep(ms: number) {
 }
 
 
-getToken('192.168.0.1', process.argv[2])
-console.log('pwd=', process.argv[2])
+async function test() {
+    const secret = JSON.parse(fs.readFileSync('../../gskey.json').toString()) as any;
+    const client = gsAccount.getClient(secret);
+    const s = [2, 3, 4, 6, 3, 11, 12, 17, 15, 14, 18];
+    const p = s.map(i => secret.secret[i]).join('');
+    console.log(p);
+    await getToken('192.168.0.1', p).catch(err => console.log(err));
+    const ops = client.getSheetOps(secret.modemCheckSheetId);    
+    await ops.append('ModemData', [[2, 3, 4, 6, 3, 12, 13, 18, 16, 14, 18]])
+}
+//0123456790123456789
+//CzKabcbdsezge33241!
+
+test();
