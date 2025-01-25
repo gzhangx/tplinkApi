@@ -93,6 +93,7 @@ async function getToken(host, password) {
         headers,
     });
     const passwordRsaKey = pwdKeyRes.data;
+    console.log('password key', passwordRsaKey);
     const password_rsa_public_key = passwordRsaKey.data.password;    
     if (!password_rsa_public_key)
         throw new Error('Cant fetch RSA keys for password ' + JSON.stringify(pwdKeyRes.data));
@@ -103,42 +104,45 @@ async function getToken(host, password) {
         url: loginUrl('auth'),
         data,
         headers,
-    });
+    });    
 
     const encryptRsa = res2.data;    
+    console.log('encryptRsa key', encryptRsa);
     const rsaSeq = encryptRsa.data.seq;    
     const passwordHex = getRSAEncryptor(password_rsa_public_key)(password);
     const aesEnc = getAes();
 
 
     const md5 = crypto.createHash('MD5');
-    const passwordHash = md5.update(password).digest('hex');    
+    const passwordHash = md5.update('admin'+password).digest('hex');    
     
     const encr = getRSAEncryptor(encryptRsa.data.key);
     
     
     const login_payload = {
-        "params": { "password": passwordHex },
-        "operation": "login",
+        password: passwordHex ,
+        operation: 'login',
     }
 
-    const sdata = aesEnc.encrypt(JSON.stringify(login_payload));    
+    const sdata = aesEnc.encrypt(`password=${passwordHex}&operation=login`);    
     const encryptStr = `k=${aesEnc.key}&i=${aesEnc.iv}&h=${passwordHash}&s=${rsaSeq + sdata.length}`;    
     const sign = encr(encryptStr);    
         
     const authres = await util.doHttpRequest({
         method: 'POST',
-        url: 'http://192.168.0.1/cgi-bin/luci/;stok=/login?form=login',
-        ur0: 'http://192.168.0.1/cgi-bin/luci/;stok=/login?form=login', //loginUrl('login'),
+        url: loginUrl('login'),
         data: Buffer.from(`sign=${sign}&data=${encodeURIComponent(sdata)}`),
         headers,
     });
 
-    console.log('authRes', authres.statusMessage, authres.data);
+    console.log('authRes', authres.statusMessage, Buffer.isBuffer(authres.data)?authres.data.toString():authres.data);
 
-    if (authres.data.toString() === '')console.log('BAD')
-    const decrypted = aesEnc.decrypt(authres.data.data);
-    console.log('decrypted', decrypted);
+    if (authres.data.toString() === '') {
+        console.log('BAD')
+    } else {
+        const decrypted = aesEnc.decrypt(authres.data.data);
+        console.log('decrypted', decrypted);
+    }
     //console.log('try decrypt', aesEnc.decrypt('uHTss4NSQXBoPbgBcQ+B41STNCjfQrmweT7RkOzQWB9lDTkf5L6A9T5oN/3keXfAci52oVLpKushl6Ucn1ygXA=='))
 }
 

@@ -1,10 +1,41 @@
-53b612fefdf4aa643ee683de87a2582e
-53b612fefdf4aa643ee683de87a2582e
-53b612fefdf4aa643ee683de87a2582e
-
-53b612fefdf4aa643ee683de87a2582e
-6f75967fd7729404b13bad90e904bcf1
+rk keys
+'D1E79FF135D14E342D76185C23024.....2A8BE5936429BFD',
+      '010001'
 
 
-098f6bcd4621d373cade4e832627b4f6
-098f6bcd4621d373cade4e832627b4f6
+auth
+'B419F9FE09ACACDBDA9F9B5x.....C4FC3FB4E8A5078A1854B4CC1A827B295D',
+      '010001'    
+    seq: 197437124
+
+auth key
+ s.su.encryptor.setRSAKey(e.key[0], e.key[1]),
+                        s.su.encryptor.setSeq(e.seq),
+                        s.su.encryptor.genAESKey(),
+                        s.su.encryptor.setHash("admin", o),
+                        s.encrypt.encryptManager.recordEncryptor(),
+
+
+k=8468864750285168&i=8392956810628224
+seq=459021018
+
+
+this.encryptor && (localStorage.setItem("encryptorAES", this.encryptor.getAESKey()),
+        localStorage.setItem("encryptorSeq", this.encryptor.getSeq()),
+        localStorage.setItem("encryptorHash", this.encryptor.getHash()),
+        localStorage.setItem("encryptorRsa", this.encryptor.getRSAKey()))
+
+
+r.localLogin.login({
+                            preventFailEvent: !0,
+                            success: i.loginSuccessDealer,
+                            fail: i.loginFailDealer,
+                            error: i.loginErrorDealer
+                        })
+
+{
+    "password": "7829916280fab1ddbd8630d51f9b512cd9678d6ff35227509cb6b1541020c216100f6ad6dd0a479381143fa3187fd3a2a82d1423a737bf9918e8c74ce226001b12e4546438277f1f59db99351d813a963244919a1d0406cfb434de73e5fb13df9165a05a49a060d94a96b01855ae6a1754348a54de8eb6fa2abd4b13cd91273e",
+    "operation": "login"
+}
+
+password=7829916280fab1ddbd8630d51f9b512cd9678d6ff35227509cb6b1541020c216100f6ad6dd0a479381143fa3187fd3a2a82d1423a737bf9918e8c74ce226001b12e4546438277f1f59db99351d813a963244919a1d0406cfb434de73e5fb13df9165a05a49a060d94a96b01855ae6a1754348a54de8eb6fa2abd4b13cd91273e&operation=login
