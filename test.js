@@ -52,16 +52,17 @@ console.log('dec(emc(test))=', aesEnc.decrypt(aesEnc.encrypt('test')));
 
 console.log('dec(emc(53b612fefdf4aa643ee683de87a2582e))=', aesEnc.decrypt(Buffer.from('53b612fefdf4aa643ee683de87a2582e','hex')));
 const headers = {
-    'content-Type': 'application/x-www-form-urlencoded'
+    'content-Type': 'application/x-www-form-urlencoded',
+    Cookie: 'sysauth=013bc65efd3bc20c646a9bc85e29cc60',
 };
 
 util.doHttpRequest({
-    url:'http://192.168.0.1/cgi-bin/luci/;stok=/login?form=login',
+    url:'http://tplinkwifi.net/cgi-bin/luci/;stok=90f717f1c559b880adf37ff07d013eb1/admin/status?form=wan_speed',
     method: 'POST',
     headers,
-    data: {
-        'sign': '8b9c93e31d8c6243a1f03eb0e8f09f6f55bc73190bffa62a4b93fcdf35514b53085de52d83ef50193e8a4aaf77bb5c232e629a74946460f2de8bf42abcc32b84528e052679b43450c6b5e7b29f034f5acbae4677b4ab8f1b861b09b2228caffdac71f29a353527a581d9db47d76052924ff76da040aff2c3f1786eed2f1f146c',
-        'data': 'F+II1cekqDa28GWHuWgJKTgRMnAlYD5j+O61tWPvCsJ5L6GKczi9Q/7NJOxQP6ea1VY+llTAY1+9iX9VeW8jmV0SEEIa3WmDZstlxv9BqyMv3+lU/VxNG2SxehMTPsurNTYiReHY5CsWr+XgB9G8Dk0UTNnVi7LZGYMDZOqcxL0K7bTBHSs9kDQLXov4Y4erw45dMoyjjNrsU21i/U54rssQ5ZK1KQ0eA9JPXhZEjJ438cB3DtSqPLte3aZNfCeuf1s/aLVIyeXKj3ssBFnw98cSKPQm7WHxBMYslBtbboW+diBJryhDBNiOzCK8QUHkj8/YFUzK/Ozt++baEaJ79PgiIpr/2vGBts+StO8tRWd+/1lzvCvXFvrKFr+3gmFYPAHwaQWxEV7S7jQdgxllHQ=='
+    data: {        
+        'sign': '0bb58478c217d48be4bd402124dfabad6c33365c46fd0af56fdf8f1420b54e937851ba094cbe5f01e3c2720b4d2d5926e601b9a7a91f00dbd335abd0b7bb8404',
+        'data': 'RmkSnD9Agx9pPynkg7EVLw==',
     }
 }).then(r => {
     console.log('r.data',r.data)

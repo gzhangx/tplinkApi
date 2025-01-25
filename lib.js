@@ -78,7 +78,7 @@ function getRSAEncryptor(modulusExpAry) {
 }
 
 //https://gist.github.com/rosmo/29200c1aedb991ce55942c4ae8b54edd
-const headers = Object.freeze({
+const stdHeaders = Object.freeze({
     'content-Type': 'application/x-www-form-urlencoded',
     'Host': 'tplinkwifi.net',
     origin: 'http://tplinkwifi.net',
@@ -93,7 +93,7 @@ async function getToken(host, password) {
         method: 'POST',
         url: loginUrl('keys'),
         data,
-        headers: { ...headers },
+        headers: { ...stdHeaders },
     });
     const passwordRsaKey = pwdKeyRes.data;
     console.log('password key', passwordRsaKey);
@@ -106,7 +106,7 @@ async function getToken(host, password) {
         method: 'POST',
         url: loginUrl('auth'),
         data,
-        headers: { ...headers },
+        headers: { ...stdHeaders },
     });    
 
     const encryptRsa = res2.data;    
@@ -134,11 +134,11 @@ async function getToken(host, password) {
     }
     async function doDataRequest(url, reqStr, showDebug) {
         console.log('doDataRequest', url, reqStr)
-        const header = {
-            ...headers,
+        const headers = {
+            ...stdHeaders,
         };
         if (doDataRequestCaches.cookie) {
-            header.Cookie = doDataRequestCaches.cookie;
+            headers.Cookie = doDataRequestCaches.cookie;
         }
         const res = await util.doHttpRequest({
             method: 'POST',
