@@ -47,3 +47,8 @@ var r = {}
           , n = t.length;
         return r.sign = this.getSignature(this.seq + n, e),
         r.data = t,
+
+
+GRANT ALL PRIVILEGES ON RouterInfo.* TO 'user'@'%';     
+create table trafficLog(date datetime, down_speed int, up_speed int , test_time int, year int, month int, day int, hour int, min int)
+create table config(name varchar(100), value varchar(4096));

@@ -2,6 +2,7 @@ import { util, gsAccount } from '@gzhangx/googleapi';
 import crypto from 'crypto';
 import http from 'http';
 import * as fs from 'fs'
+import { doSecSetup } from './secs';
 
 // borrowed ideas, but none worked
 //https://github.com/marcomow/home-assistant-tp-link-router-addon/blob/7af13b3351047bfc2e29729488bc449f3eaef3c7/src/index.ts
@@ -232,13 +233,11 @@ export async function sleep(ms: number) {
 
 
 export async function doAll() {
-    const secret = JSON.parse(fs.readFileSync('../../gskey.json').toString()) as any;
-    const client = gsAccount.getClient(secret);
-    const s = [2, 3, 4, 6, 3, 11, 12, 17, 15, 14, 18];
-    const p = s.map(i => secret.secret[i]).join('');
-    const ops = client.getSheetOps(secret.modemCheckSheetId);    
-        
-    const opt = await getToken(secret.routerAddress, p);
+    const sec = await doSecSetup();    
+    const client = gsAccount.getClient(sec.config.gsheet);        
+    const ops = client.getSheetOps(sec.config.modemCheckSheetId);    
+    const p = sec.config.p;
+    const opt = await getToken(sec.config.routerAddress, p);
     await getWanReq(opt, async vals => {
         await ops.append('ModemData', [vals])    
     })
