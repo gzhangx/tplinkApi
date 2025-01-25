@@ -102,7 +102,7 @@ async function getToken(host, password) {
         }
     } = pwdKeyRes.data as any;
     const password_rsa_public_key = passwordRsaKey.data.password;
-    console.log('pwdKeyRes.data', pwdKeyRes.data)
+    //console.log('pwdKeyRes.data', pwdKeyRes.data)
     if (!password_rsa_public_key) throw new Error('Cant fetch RSA keys for password ' + JSON.stringify(pwdKeyRes.data));
 
 
@@ -118,7 +118,7 @@ async function getToken(host, password) {
             key: string[];
         }
     }
-    console.log('------------------------ auth rsa n ', res2.data)
+    //console.log('------------------------ auth rsa n ', res2.data)
     const rsaSeq: number = encryptRsa.data.seq;
     const passwordHex = getRSAEncryptor(password_rsa_public_key)(password);
     
@@ -208,6 +208,10 @@ async function getWanReq(stok: string, doDataRequest: DoDataRequestType) {
     console.log('Stok', stok);
     while (true) {
         const res = await getAdminStatus(stok, doDataRequest, 'wan_speed');
+        if (!res) {
+            console.log('break on no res')
+            break;
+        }
         console.log(`down_speed ${res.down_speed.toString().padStart(7)} up_speed: ${res.up_speed.toString().padStart(7)} testtime: ${res.test_time}`)
         await sleep(1000);
     }
@@ -225,10 +229,11 @@ async function test() {
     const client = gsAccount.getClient(secret);
     const s = [2, 3, 4, 6, 3, 11, 12, 17, 15, 14, 18];
     const p = s.map(i => secret.secret[i]).join('');
-    console.log(p);
-    await getToken('192.168.0.1', p).catch(err => console.log(err));
     const ops = client.getSheetOps(secret.modemCheckSheetId);    
-    await ops.append('ModemData', [[2, 3, 4, 6, 3, 12, 13, 18, 16, 14, 18]])
+    await ops.append('ModemData', [['1', '2', '3']])
+    
+    await getToken(secret.routerAddress, p).catch(err => console.log(err));    
+    
 }
 //0123456790123456789
 //CzKabcbdsezge33241!
