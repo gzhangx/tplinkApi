@@ -39,3 +39,11 @@ r.localLogin.login({
 }
 
 password=7829916280fab1ddbd8630d51f9b512cd9678d6ff35227509cb6b1541020c216100f6ad6dd0a479381143fa3187fd3a2a82d1423a737bf9918e8c74ce226001b12e4546438277f1f59db99351d813a963244919a1d0406cfb434de73e5fb13df9165a05a49a060d94a96b01855ae6a1754348a54de8eb6fa2abd4b13cd91273e&operation=login
+
+
+
+var r = {}
+          , t = this.aes.encrypt(t)
+          , n = t.length;
+        return r.sign = this.getSignature(this.seq + n, e),
+        r.data = t,

@@ -128,13 +128,7 @@ async function getToken(host, password) {
     //console.log('create encr for ', encryptRsa.data.key, encryptRsa.data.key[0].length)
     
     
-    const login_payload = {
-        "params": { "password": passwordHex },
-        "operation": "login",
-    }
-
-    const sdata = aesEnc.encrypt(JSON.stringify(login_payload));
-    console.log('Encryting login_payload', login_payload, 'got', sdata);
+    const sdata = aesEnc.encrypt(`password=${passwordHex}&operation=login`);    
     const encryptStr = `k=${aesEnc.key}&i=${aesEnc.iv}&h=${passwordHash}&s=${rsaSeq + sdata.length}`;
 
     console.log('encryptStr is', encryptStr, encryptStr.length)
@@ -154,5 +148,5 @@ async function getToken(host, password) {
 }
 
 
-getToken('192.168.0.1', 'test')
+getToken('192.168.0.1', process.argv[2])
 console.log('pwd=', process.argv[2])

@@ -118,12 +118,6 @@ async function getToken(host, password) {
     
     const encr = getRSAEncryptor(encryptRsa.data.key);
     
-    
-    const login_payload = {
-        password: passwordHex ,
-        operation: 'login',
-    }
-
     const sdata = aesEnc.encrypt(`password=${passwordHex}&operation=login`);    
     const encryptStr = `k=${aesEnc.key}&i=${aesEnc.iv}&h=${passwordHash}&s=${rsaSeq + sdata.length}`;    
     const sign = encr(encryptStr);    
