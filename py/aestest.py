@@ -40,7 +40,7 @@ from exceptions import LoginForbiddenException
 from exceptions import LoginInvalidException
 from exceptions import TimeoutException
 from exceptions import UnexpectedApiException
-
+import requests
 
 
 def aes_encrypt(plaintext: bytes) -> bytes:
@@ -71,3 +71,10 @@ def aes_encrypt(plaintext: bytes) -> bytes:
     return ciphertext
 
 print('encrypt test got ',aes_encrypt('test'.encode()).hex())
+
+
+url = "http://192.168.0.1/cgi-bin/luci/;stok=/login?form=login"
+res = requests.post(url,{
+    'sign':'08c32d6ecb150e31492f82ac380d459551ecb2a726431936c7b840d071341c1029f061a4cdbb5886a29b86f518cd80759fa5040afedd53fb75c495a6e9d815771918fcf3d21566af46d652c180b23f02ec5cede084976910c3ab4cde15add67cdf3b00dd113a0e485507e8ed28e1817ff26b67da96b0c492914c243e3d12d0c1',
+    'data':'F+II1cekqDa28GWHuWgJKTgRMnAlYD5j+O61tWPvCsJ5L6GKczi9Q/7NJOxQP6ea1VY+llTAY1+9iX9VeW8jmV0SEEIa3WmDZstlxv9BqyMv3+lU/VxNG2SxehMTPsurNTYiReHY5CsWr+XgB9G8Dk0UTNnVi7LZGYMDZOqcxL0K7bTBHSs9kDQLXov4Y4erw45dMoyjjNrsU21i/U54rssQ5ZK1KQ0eA9JPXhZEjJ438cB3DtSqPLte3aZNfCeuf1s/aLVIyeXKj3ssBFnw98cSKPQm7WHxBMYslBtbboW+diBJryhDBNiOzCK8QUHkj8/YFUzK/Ozt++baEaJ79PgiIpr/2vGBts+StO8tRWd+/1lzvCvXFvrKFr+3gmFYPAHwaQWxEV7S7jQdgxllHQ=='})
+print(res.text)
