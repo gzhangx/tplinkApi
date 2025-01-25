@@ -75,7 +75,7 @@ function getRSAEncryptor(modulusExpAry: string[]) {
     }
 }
 
-const headers = Object.freeze({
+const stdHeaders = Object.freeze({
     'content-Type': 'application/x-www-form-urlencoded'
 }) as http.OutgoingHttpHeaders;
 
@@ -90,7 +90,7 @@ async function getToken(host, password) {
         method: 'POST',
         url: loginUrl('keys'),
         data,
-        headers: {...headers}
+        headers: { ...stdHeaders }
     });
     const passwordRsaKey: {
         data: {
@@ -108,7 +108,7 @@ async function getToken(host, password) {
         method: 'POST',
         url: loginUrl('auth'),
         data,
-        headers: { ...headers }
+        headers: { ...stdHeaders }
     });
     const encryptRsa = res2.data as unknown as {
         data: {
@@ -144,17 +144,17 @@ async function getToken(host, password) {
     }
     async function doDataRequest(url: string, reqStr:string, showDebug=false) {
         console.log('doDataRequest', url, reqStr)
-        const header = {
-            ...headers,
+        const headers = {
+            ...stdHeaders,
         };
         if (doDataRequestCaches.cookie) {
-            header.Cookie = doDataRequestCaches.cookie;
+            headers.Cookie = doDataRequestCaches.cookie;
         }
         const res = (await util.doHttpRequest({
             method: 'POST',
             url,
             data: createDataReq(reqStr),
-            headers: { ...headers },
+            headers,
         })) as unknown as  {
             statusMessage: string;
             headers: http.IncomingHttpHeaders;
@@ -164,7 +164,7 @@ async function getToken(host, password) {
         };
         console.log('doDataRequest', url, reqStr, res.statusMessage)
         if (showDebug) {
-            console.log('header', header, 'res', res);
+            console.log('header', headers, 'res', res);
         }
         const setCookie = res.headers['set-cookie'];
         if (setCookie) {
@@ -188,25 +188,34 @@ async function getToken(host, password) {
     }
 
     const stok = authres.data.stok;
-    console.log('stok', stok)
+    //console.log('stok', stok)
     await getWanReq(stok, doDataRequest);
 }
 
 type DoDataRequestType = (url: string, reqStr: string, showDebug: boolean) => Promise<any>;
+
 async function getAdminStatus(stok: string, doDataRequest: DoDataRequestType, form: string) {
     const url = `http://192.168.0.1/cgi-bin/luci/;stok=${stok}/admin/status?form=${form}`;
     const res = await doDataRequest(url, 'operation=read', false);
     if (res.statusMessage) console.log(res.statusMessage);
     else {
-        console.log('getwan res', res);
+        return res.data;
     }
 }
 async function getWanReq(stok: string, doDataRequest: DoDataRequestType) {
-    await getAdminStatus(stok, doDataRequest, 'wan_speed');
-    await getAdminStatus(stok, doDataRequest, 'internet');
-    await getAdminStatus(stok, doDataRequest, 'all');
+    console.log('Stok', stok);
+    while (true) {
+        const res = await getAdminStatus(stok, doDataRequest, 'wan_speed');
+        console.log(`down_speed ${res.down_speed.toString().padStart(7)} up_speed: ${res.up_speed.toString().padStart(7)}`)
+        await sleep(1000);
+    }
+    //await getAdminStatus(stok, doDataRequest, 'internet');
+    //await getAdminStatus(stok, doDataRequest, 'all');
 }
 
+async function sleep(ms: number) {
+    return await new Promise(resolve => setTimeout(resolve, ms));
+}
 
 
 getToken('192.168.0.1', process.argv[2])

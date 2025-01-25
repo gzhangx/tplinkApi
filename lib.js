@@ -133,7 +133,7 @@ async function getToken(host, password) {
         cookie: '',
     }
     async function doDataRequest(url, reqStr, showDebug) {
-        console.log('doDataRequest', url, reqStr)
+        //console.log('doDataRequest', url, reqStr)
         const headers = {
             ...stdHeaders,
         };
@@ -146,7 +146,7 @@ async function getToken(host, password) {
             data: createDataReq(reqStr),
             headers: { ...headers },
         });        
-        console.log('doDataRequest', url, reqStr, res.statusMessage)
+        //console.log('doDataRequest', url, reqStr, res.statusMessage)
         if (showDebug) {
             console.log('header',header, 'res', res);
         }
@@ -162,17 +162,14 @@ async function getToken(host, password) {
     }
 
     const authres = await doDataRequest(loginUrl('login'), `password=${passwordHex}&operation=login`);        
-
-
-    console.log('authRes', authres);
+    //console.log('authRes', authres);
 
     if (authres === '') {
         console.log('BAD')
         return;
     } 
         
-    const stok = authres.data.stok;
-    console.log('stok', stok)
+    const stok = authres.data.stok;    
     await getWanReq(stok, doDataRequest);
     //console.log('try decrypt', aesEnc.decrypt('uHTss4NSQXBoPbgBcQ+B41STNCjfQrmweT7RkOzQWB9lDTkf5L6A9T5oN/3keXfAci52oVLpKushl6Ucn1ygXA=='))
 }
@@ -183,13 +180,22 @@ async function getAdminStatus(stok, doDataRequest,form) {
     const res = await doDataRequest(url, 'operation=read', false);
     if (res.statusMessage) console.log(res.statusMessage);
     else {
-        console.log('getwan res', res);
+        return res.data;
     }
 }
 async function getWanReq(stok, doDataRequest) {
-    await getAdminStatus(stok, doDataRequest, 'wan_speed');
-    await getAdminStatus(stok, doDataRequest, 'internet');
-    await getAdminStatus(stok, doDataRequest, 'all');
+    console.log('Stok', stok);
+    while (true) {
+        const res = await getAdminStatus(stok, doDataRequest, 'wan_speed');
+        console.log(`down_speed ${res.down_speed.toString().padStart(7)} up_speed: ${res.up_speed.toString().padStart(7)}`)
+        await sleep(1000);
+    }
+    //await getAdminStatus(stok, doDataRequest, 'internet');
+    //await getAdminStatus(stok, doDataRequest, 'all');
+}
+
+async function sleep(ms) {
+    return await new Promise(resolve => setTimeout(resolve, ms));
 }
 
 
