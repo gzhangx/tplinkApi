@@ -138,7 +138,8 @@ async function getToken(host, password) {
     console.log('authRes', authres.statusMessage, authres.data, 'data len', sdata.length, 'sign len', sign.length);
 
     if (authres.data.toString() === '')console.log('BAD')
- 
+    const decrypted = aesEnc.decrypt(authres.data.data);
+    console.log('decrypted', decrypted);
     //console.log('try decrypt', aesEnc.decrypt('uHTss4NSQXBoPbgBcQ+B41STNCjfQrmweT7RkOzQWB9lDTkf5L6A9T5oN/3keXfAci52oVLpKushl6Ucn1ygXA=='))
 }
 

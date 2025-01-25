@@ -8,11 +8,9 @@ function getAes() {
     const MIN_AES_KEY = 10 ** (AES_KEY_BYTES - 1);
     const MAX_AES_KEY = (10 ** AES_KEY_BYTES) - 1;
     const randomAK = () => Math.floor(Math.random() * (MAX_AES_KEY - MIN_AES_KEY)) + MIN_AES_KEY;
-    //# TPLink requires key and IV to be a 16 digit number(no leading 0s)
-    //const key = crypto.randomBytes(32); // 256-bit key
-    //const iv = crypto.randomBytes(16);
-    const key = 1728043569335086;  //randomAK();
-    const iv = 1728043569335086;  //randomAK();
+    //# TPLink requires key and IV to be a 16 digit number(no leading 0s)    
+    const key = randomAK();
+    const iv = randomAK();
 
     
     const keyBuf = Buffer.from(key.toString());
@@ -78,13 +76,13 @@ function getRSAEncryptor(modulusExpAry: string[]) {
 
 //https://gist.github.com/rosmo/29200c1aedb991ce55942c4ae8b54edd
 async function getToken(host, password) {
-    const headers =  {
+    const headers = {
         'content-Type': 'application/x-www-form-urlencoded'
     };
     let data = {
         operation: 'read',
-    };    
-    const loginUrl =  form => `http://${host}/cgi-bin/luci/;stok=/login?form=${form}`
+    };
+    const loginUrl = form => `http://${host}/cgi-bin/luci/;stok=/login?form=${form}`
     const pwdKeyRes = await util.doHttpRequest({
         method: 'POST',
         url: loginUrl('keys'),
@@ -115,27 +113,15 @@ async function getToken(host, password) {
             key: string[];
         }
     }
-    console.log('------------------------ auth rsa n ',res2.data)
-    let rsaSeq: number = encryptRsa.data.seq;
+    console.log('------------------------ auth rsa n ', res2.data)
+    const rsaSeq: number = encryptRsa.data.seq;
+    const passwordHex = getRSAEncryptor(password_rsa_public_key)(password);
     
-
-    console.log('encrypting pwd', password)
-    let passwordHex = getRSAEncryptor(password_rsa_public_key)(password);
-    //console.log('forcing password hex to be C762FB52B9A847325F5EA24B1EE193DBB69BC20E97A00900E0683C4AA67E5278FBE9797FD54448711B8C3BE0428F0D93506B55D574E98B015D3431E4B06D1F9D')
-    //passwordHex = 'C762FB52B9A847325F5EA24B1EE193DBB69BC20E97A00900E0683C4AA67E5278FBE9797FD54448711B8C3BE0428F0D93506B55D574E98B015D3431E4B06D1F9D'
-    //rsaSeq = 903365446
-    
-
-    console.log(passwordHex, 'passwordHex nothexxxxx')
-    
-    console.log('------------------')
-
     const aesEnc = getAes();
 
 
     const md5 = crypto.createHash('MD5');
     const passwordHash = md5.update(password).digest('hex');
-    console.log('password hash=', passwordHash)
     // for "sign" parameter
     
     const encr = getRSAEncryptor(encryptRsa.data.key);
@@ -143,7 +129,7 @@ async function getToken(host, password) {
     
     
     const login_payload = {
-            "params": { "password": passwordHex },
+        "params": { "password": passwordHex },
         "operation": "login",
     }
 
@@ -156,18 +142,15 @@ async function getToken(host, password) {
     const authres = await util.doHttpRequest({
         method: 'POST',
         url: loginUrl('login'),
-        data: {
-            data: sdata,
-            sign,
-        },
+        data: Buffer.from(`sign=${sign}&data=${encodeURIComponent(sdata)}`),
         headers,
-    });    
+    });
 
     console.log('authRes', authres.statusMessage, 'login response data=====>', authres.data.toString(), 'data len', sdata.length, 'sign len', sign.length);
-    console.log('authRes', authres.statusMessage, authres.data.toString(), 'data len', sdata.length, 'sign len', sign.length);
+    console.log('authRes', authres.statusMessage, authres.data);
     //console.log(sign)
-
-
+    const decrypted = aesEnc.decrypt((authres.data as any).data);
+    console.log('decrypted', decrypted);
 }
 
 
