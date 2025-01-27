@@ -185,10 +185,7 @@ export async function getToken(host: string, password: string) {
         "password="+passwordHex
     ].join('&')
 
-    const authres = await doDataRequest(loginUrl('login'), loginReq); //`password=${passwordHex}&operation=login`
-
-
-    console.log('authRes', authres);
+    const authres = await doDataRequest(loginUrl('login'), loginReq); //`password=${passwordHex}&operation=login`    
 
     if (authres === '') {
         console.log('BAD')
