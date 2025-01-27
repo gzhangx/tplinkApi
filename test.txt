@@ -50,5 +50,8 @@ var r = {}
 
 
 GRANT ALL PRIVILEGES ON RouterInfo.* TO 'user'@'%';     
-create table trafficLog(date datetime, down_speed int, up_speed int , test_time int, year int, month int, day int, hour int, min int)
+create table trafficLog(down_speed int, up_speed int , date datetime, test_time int, year int, month int, day int, hour int, min int)
 create table config(name varchar(100), value varchar(4096));
+
+
+create table deviceTrafficLog(deviceName varchar(100), down_speed int, up_speed int , date datetime, test_time int, year int, month int, day int, hour int, min int);

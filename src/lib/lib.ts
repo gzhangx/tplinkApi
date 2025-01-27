@@ -199,50 +199,31 @@ export async function getToken(host: string, password: string) {
     }
 }
 
-type GetTokenReturn = Awaited<ReturnType<typeof getToken>>;
-type DoDataRequestType = (url: string, reqStr: string, showDebug: boolean) => Promise<any>;
+export type GetTokenReturn = Awaited<ReturnType<typeof getToken>>;
+//type DoDataRequestType = (url: string, reqStr: string, showDebug: boolean) => Promise<any>;
 
-async function getAdminStatus(opt: GetTokenReturn, form: string) {
-    const url = `http://${opt.host}/cgi-bin/luci/;stok=${opt.stok}/admin/status?form=${form}`;
-    const res = await opt.doDataRequest(url, 'operation=read', false);
+type TpLinkAdminFormTypes = 'wan_speed' | 'game_accelerator' | 'internet' | 'all' | 'black_devices' | 'mesh_sclient_list_all';
+export async function getAdminFunction(opt: GetTokenReturn, funcName: 'status' | 'access_control' | 'smart_network' | 'onemesh_network', form: TpLinkAdminFormTypes, operation: ('read' | 'loadDevice' | 'load' | 'loadSpeed') = 'read') {
+    const url = `http://${opt.host}/cgi-bin/luci/;stok=${opt.stok}/admin/${funcName}?form=${form}`;
+    const res = await opt.doDataRequest(url, `operation=${operation}`, false);
     if (res.statusMessage) console.log(res.statusMessage);
     else {
         return res.data;
     }
 }
 
-export async function getWanReq(opt: GetTokenReturn, log: (val:string[])=>Promise<void>) {
-    console.log('Stok', opt.stok);
-    while (true) {
-        const res = await getAdminStatus(opt, 'wan_speed');
-        if (!res) {
-            console.log('break on no res')
-            break;
-        }
-        console.log(`down_speed ${res.down_speed.toString().padStart(7)} up_speed: ${res.up_speed.toString().padStart(7)} testtime: ${res.test_time}`)
-        await log([res.down_speed, res.up_speed, res.test_time]);
-        await sleep(1000);
-    }
-    //await getAdminStatus(stok, doDataRequest, 'internet');
-    //await getAdminStatus(stok, doDataRequest, 'all');
+
+export async function getAdminStatus(opt: GetTokenReturn, form: TpLinkAdminFormTypes) {
+    return getAdminFunction(opt, 'status', form);    
 }
+
 
 export async function sleep(ms: number) {
     return await new Promise(resolve => setTimeout(resolve, ms));
 }
 
 
-export async function doAll() {
-    const sec = await doSecSetup();    
-    const client = gsAccount.getClient(sec.config.gsheet);        
-    const ops = client.getSheetOps(sec.config.modemCheckSheetId);    
-    const p = sec.config.p;
-    const opt = await getToken(sec.config.routerAddress, p);
-    await getWanReq(opt, async vals => {
-        await ops.append('ModemData', [vals])    
-    })
-    
-}
+
 //0123456790123456789
 //CzKabcbdsezge33241!
 
