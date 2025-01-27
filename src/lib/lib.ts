@@ -179,7 +179,13 @@ export async function getToken(host: string, password: string) {
         return JSON.parse(decrypted);
     }
 
-    const authres = await doDataRequest(loginUrl('login'), `password=${passwordHex}&operation=login`);
+    const loginReq = [
+        "operation=login",
+        "confirm=true",
+        "password="+passwordHex
+    ].join('&')
+
+    const authres = await doDataRequest(loginUrl('login'), loginReq); //`password=${passwordHex}&operation=login`
 
 
     console.log('authRes', authres);
