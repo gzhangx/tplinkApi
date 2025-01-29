@@ -21,14 +21,14 @@ export type ServerOptions = {
 }
 
 function setCrosHeader(req: http.IncomingMessage, res: HttpResponseType) {
-    res.appendHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Origin", "*");
     const acrm = req.headers["Access-Control-Request-Method"];
     if (acrm) {
-        res.appendHeader("Access-Control-Allow-Methods", acrm);
+        res.setHeader("Access-Control-Allow-Methods", acrm);
     }
     const acrh = req.headers["Access-Control-Request-Headers"];
     if (acrh) {
-        res.appendHeader("Access-Control-Allow-Headers", acrh);
+        res.setHeader("Access-Control-Allow-Headers", acrh);
     }
 }
 export async function createServer(serverOptions: ServerOptions): Promise<ServerOptions> {
