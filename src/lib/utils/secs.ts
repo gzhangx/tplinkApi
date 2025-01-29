@@ -11,6 +11,9 @@ type Secconfig = {
     tplinkSecretwz: string;
     p: string;
 };
+
+export type SetupData = Awaited<ReturnType<typeof doSecSetup>>;
+
 export async function doSecSetup() {
     const dbCfg = JSON.parse(fs.readFileSync('../../secs/tpdb.json').toString());
     const db = sql.createConn(dbCfg);

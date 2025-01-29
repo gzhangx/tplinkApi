@@ -1,0 +1,48 @@
+import http from 'http';
+import https from 'https';
+
+type HttpResponseType = http.ServerResponse<http.IncomingMessage> & {
+    req: http.IncomingMessage;
+};
+
+export type ReqAndRsp = {
+    req: http.IncomingMessage;
+    res: HttpResponseType;
+    data: any;
+    serverOptions: ServerOptions;
+}
+type UrlMapper = (rr: ReqAndRsp) => Promise<boolean>;
+
+export type ServerOptions = {
+    port: number;
+    router: UrlMapper;
+    httpsOpts?: https.ServerOptions;
+    setup: any;
+}
+export async function createServer(serverOptions: ServerOptions): Promise<ServerOptions> {
+    return new Promise((resolve) => {
+        function handler(req: http.IncomingMessage, res: HttpResponseType) {
+            let payload = "";
+
+            req.on('data', (chunk) => {
+                payload += chunk;
+            });
+
+            req.on('end', async () => {        
+                const contentType = req.headers['content-type'];
+                if (contentType === 'application/json') {
+                    payload = JSON.parse(payload);
+                }
+                if (! await serverOptions.router({ req, res, data: payload, serverOptions, })) {
+                    res.writeHead(404, { 'Content-Type': 'application/json' });
+                    res.write(`{"error":"Not Found ${req.url} "}`);
+                } 
+                res.end();
+            });                        
+        }
+        const srv = serverOptions.httpsOpts ?
+            https.createServer(serverOptions.httpsOpts, handler)
+            : http.createServer(handler);
+        srv.listen(serverOptions.port, () => resolve(serverOptions));;        
+    });
+}
