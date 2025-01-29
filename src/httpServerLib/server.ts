@@ -20,16 +20,18 @@ export type ServerOptions = {
     setup: any;
 }
 
-function setCrosHeader(req: http.IncomingMessage, res: HttpResponseType) {
-    res.setHeader("Access-Control-Allow-Origin", "*");
+function getCrosHeader(req: http.IncomingMessage) {    
+    const res: { [name: string]: any; }= {};
+    res['Access-Control-Allow-Origin'] = "*";
     const acrm = req.headers["Access-Control-Request-Method"];
     if (acrm) {
-        res.setHeader("Access-Control-Allow-Methods", acrm);
+        res['Access-Control-Allow-Methods'] = acrm as string;
     }
     const acrh = req.headers["Access-Control-Request-Headers"];
     if (acrh) {
-        res.setHeader("Access-Control-Allow-Headers", acrh);
+        res["Access-Control-Allow-Headers"]=  acrh;
     }
+    return res;
 }
 export async function createServer(serverOptions: ServerOptions): Promise<ServerOptions> {
     return new Promise((resolve) => {
@@ -40,8 +42,12 @@ export async function createServer(serverOptions: ServerOptions): Promise<Server
                 payload += chunk;
             });
 
-            req.on('end', async () => {                  
-                setCrosHeader(req, res);                
+            req.on('end', async () => {
+                if (req.method === 'OPTIONS') {
+                    res.writeHead(200,'OK', getCrosHeader(req));
+                    res.end();
+                    return;
+                }    
                 const contentType = req.headers['content-type'];
                 if (contentType === 'application/json') {
                     payload = JSON.parse(payload);
