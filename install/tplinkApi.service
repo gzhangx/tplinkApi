@@ -1,0 +1,17 @@
+[Unit]
+Description=tpLinkApi
+After=network.target
+
+#log with journalctl -u tpLinkApi.service
+[Service]
+#EnvironmentFile=/home/pi/creds/pienv.txt
+ExecStart=/usr/bin/node /home/pi/work/cur/tplinkApi/server.js 
+WorkingDirectory=/home/pi/work/cur/tplinkApi
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=pi
+Group=netdev
+
+[Install]
+WantedBy=multi-user.target
