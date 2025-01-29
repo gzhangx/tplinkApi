@@ -1,6 +1,6 @@
 
 import { doSecSetup } from "./secs";
-import { getAdminStatus, getToken, GetTokenReturn, sleep, getAdminFunction } from "./lib";
+import { getAdminStatus, getToken, GetTokenReturn, sleep, getAdminFunction } from "./tplinkLib";
 
 
 export async function initGetToken() {

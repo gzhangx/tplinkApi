@@ -1,8 +1,6 @@
-import { util, gsAccount } from '@gzhangx/googleapi';
+import { util, } from '@gzhangx/googleapi';
 import crypto from 'crypto';
 import http from 'http';
-import * as fs from 'fs'
-import { doSecSetup } from './secs';
 
 // borrowed ideas, but none worked
 //https://github.com/marcomow/home-assistant-tp-link-router-addon/blob/7af13b3351047bfc2e29729488bc449f3eaef3c7/src/index.ts

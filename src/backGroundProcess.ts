@@ -1,5 +1,5 @@
 import { gsAccount } from "@gzhangx/googleapi";
-import { initGetToken, getRouterSpeed, getDeviceSpeeds } from "./lib/tplink";
+import { initGetToken, getRouterSpeed, getDeviceSpeeds } from "./lib/utils/tplink";
 
 export async function doAll() {
     const { opt, sec } = await initGetToken();

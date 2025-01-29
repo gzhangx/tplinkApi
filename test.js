@@ -1,5 +1,5 @@
-const lib = require('./out/index')
-const { getAdminStatus, getAdminFunction, sleep } = require('./out/lib/lib')
+const lib = require('./out/backGroundProcess')
+//const { getAdminStatus, getAdminFunction, sleep } = require('./out/backGroundProcess')
 
 lib.doAll();
 //lib.doAll();
