@@ -20,17 +20,15 @@ export type ServerOptions = {
     setup: any;
 }
 
-function getCrosHeader(req: http.IncomingMessage) {    
+function setCrosHeader(req: http.IncomingMessage, rsp: HttpResponseType) {    
     const res: { [name: string]: any; }= {};
-    res['Access-Control-Allow-Origin'] = "*";
+    res['Access-Control-Allow-Origin'] = req.headers.origin || "*";
+    rsp.setHeader('Access-Control-Allow-Origin', '*');
     const acrm = req.headers["Access-Control-Request-Method"];
-    if (acrm) {
-        res['Access-Control-Allow-Methods'] = acrm as string;
-    }
-    const acrh = req.headers["Access-Control-Request-Headers"];
-    if (acrh) {
-        res["Access-Control-Allow-Headers"]=  acrh;
-    }
+    rsp.setHeader('Access-Control-Allow-Methods',acrm as string || 'GET,POST,OPTIONS');
+    
+    //const acrh = req.headers["Access-Control-Request-Headers"];    
+    rsp.setHeader("Access-Control-Allow-Headers",  '*');    
     return res;
 }
 export async function createServer(serverOptions: ServerOptions): Promise<ServerOptions> {
@@ -43,8 +41,9 @@ export async function createServer(serverOptions: ServerOptions): Promise<Server
             });
 
             req.on('end', async () => {
+                setCrosHeader(req, res)
                 if (req.method === 'OPTIONS') {
-                    res.writeHead(200,'OK', getCrosHeader(req));
+                    res.writeHead(200,'OK');
                     res.end();
                     return;
                 }    
