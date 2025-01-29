@@ -2,7 +2,7 @@ import { SetupData } from "../../lib/utils/secs";
 import { ReqAndRsp } from "../server";
 
 type GenerateSqlParam = {
-    table: 'trafficLog';
+    table: 'trafficLog' | 'deviceTrafficLog';
     groupAt: string;
     where: string[][];
 }
@@ -10,12 +10,17 @@ type GenerateSqlParam = {
 function generateSql(prm: GenerateSqlParam) {
     const allGroupBys = ['year', 'month', 'day', 'hour', 'min'];    
     const groups: string[] = [];
+    if (prm.table === 'deviceTrafficLog') {
+        allGroupBys.push('name');
+        groups.push('deviceName');
+    }
     for (const name of allGroupBys) {
         groups.push(name);
         if (name === prm.groupAt) {
             break;
         }
     }
+    
     const groupByStr = groups.join(',')
     let whereArray: string[] = [];
     let argsArray: string[] = [];
@@ -56,6 +61,7 @@ export async function sqlController(rr: ReqAndRsp) {
     //const allGroupBys = ['year', 'month', 'day', 'hour', 'min']
     switch (table) {
         case 'trafficLog':
+        case 'deviceTrafficLog':
             const sqlAndArg = generateSql(rr.data);
             console.log(sqlAndArg);
             const res = await setup.db.doQuery(sqlAndArg.sql, sqlAndArg.argsArray);
