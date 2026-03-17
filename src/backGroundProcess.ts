@@ -54,13 +54,15 @@ export async function doAllSimple() {
     //const { opt, sec } = await initGetToken();
     //const client = gsAccount.getClient(sec.config.gsheet);
     //const ops = client.getSheetOps(sec.config.modemCheckSheetId);
+    const host = process.env.HOST;
+    console.log('host', host);
     const opt = {
         stok: '',
         doDataRequest: async (url: string, reqStr: string, showDebug: boolean) => {
             console.log('WARNN!!!!!doDataRequest', url, reqStr);
             return {};
         },
-        host: '',
+        host,
     };
     while (true) {
         const rs = await getRouterSpeed(opt);
