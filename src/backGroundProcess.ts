@@ -1,5 +1,6 @@
 import { gsAccount } from "@gzhangx/googleapi";
 import { initGetToken, getRouterSpeed, getDeviceSpeeds } from "./lib/utils/tplink";
+import { getToken } from "./lib/utils/tplinkLib";
 
 export async function doAll() {
     const { opt, sec } = await initGetToken();
@@ -55,15 +56,9 @@ export async function doAllSimple() {
     //const client = gsAccount.getClient(sec.config.gsheet);
     //const ops = client.getSheetOps(sec.config.modemCheckSheetId);
     const host = process.env.HOST;
-    console.log('host', host);
-    const opt = {
-        stok: '',
-        doDataRequest: async (url: string, reqStr: string, showDebug: boolean) => {
-            console.log('WARNN!!!!!doDataRequest', url, reqStr);
-            return {};
-        },
-        host,
-    };
+    const password = process.env.PASSWORD;
+    console.log('host', host, password);
+    const opt = await getToken(host, password);
     while (true) {
         const rs = await getRouterSpeed(opt);
         if (!rs) {
