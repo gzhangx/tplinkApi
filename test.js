@@ -1,7 +1,7 @@
 const lib = require('./out/backGroundProcess')
 //const { getAdminStatus, getAdminFunction, sleep } = require('./out/backGroundProcess')
 
-lib.doAll();
+lib.doAllSimple();
 //lib.doAll();
 
 // lib.initGetToken().then(async ({ opt, sec }) => {
